@@ -1,17 +1,16 @@
 #!/usr/bin/env python
+from rucio.api.did import set_new_dids, list_dids
 
-from __future__ import print_function
-from rucio.client.client import Client
+filters = {
+    "name": "/*/MINIAOD",
+}
 
-cl = Client(account='root')
-print(cl.whoami())
+didlist = (
+    {"scope": "cms", "name": did}
+    for i, did in enumerate(list_dids(scope="cms", filters=filters, type="container"))
+    if "RelVal" not in did
+)
 
-for campaign in ['Nano1June2019', 'NanoAODv5']:
-    filters = {'name': '*%s*' % campaign}
+for did in didlist:
+    set_new_dids([did])
 
-    for did in list(cl.list_dids(scope='cms', filters=filters)):
-        try:
-            print('Fixing up %s' % did)
-            cl.set_metadata(scope='cms', name=did, key='is_new', value=True)
-        except:
-            print(' failed')
